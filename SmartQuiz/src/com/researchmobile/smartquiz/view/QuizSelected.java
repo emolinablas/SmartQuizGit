@@ -1,7 +1,9 @@
 package com.researchmobile.smartquiz.view;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -13,7 +15,6 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.researchmobile.smartquiz.data.DataQuiz;
-import com.researchmobile.smartquiz.entity.Answer;
 import com.researchmobile.smartquiz.entity.Result;
 import com.researchmobile.smartquiz.utility.Convert;
 import com.researchmobile.smartquiz.utility.MyDialog;
@@ -39,6 +40,8 @@ public class QuizSelected extends Activity implements OnClickListener{
 	private Convert convert;
 	private RequestWS requestWS;
 	private MyDialog myDialog;
+	
+	private ProgressDialog pd = null;
 	//DataQuiz Temporal
 	DataQuiz dataQuiz = new DataQuiz();
 	//AdapterSpinner Teporal
@@ -176,45 +179,75 @@ public class QuizSelected extends Activity implements OnClickListener{
     @Override
 	public void onClick(View view) {
 		if (view == getQuizBeginButton()){
-			String supervisionSelected = getSupervisionSpinner().getSelectedItem().toString();
-			if (supervisionSelected.equalsIgnoreCase("") || supervisionSelected == null){
-				getMyDialog().AlertDialog(QuizSelected.this, "ALERTA", "DEBE SELECCIONAR UNA SUPERVISION");
-			}else{
-			
-				try{
-					
-				int tamanoSupervision = getResult().getSupervision().length;
-				for (int i = 0; i < tamanoSupervision; i++){
-					if (getResult().getSupervision()[i].getDescription().equalsIgnoreCase(supervisionSelected)){
-							setIdSupervisionSelected(getResult().getSupervision()[i].getIdSupervision());
-							setSupervisionSelected(getResult().getSupervision()[i].getDescription());
-						}
-					}
-				
-				Result resulta = new Result();
-				resulta = getRequestWS().areaData(getIdSupervisionSelected());
-				
-				getResult().setArea(resulta.getArea());
-				
-			    Intent intent = new Intent(QuizSelected.this, ListaArea.class);
-				intent.putExtra("result", result);
-				intent.putExtra("idSupervisionSelected", getIdSupervisionSelected());
-				intent.putExtra("SupervisionSelected", getSupervisionSelected());
-				System.out.println("Este es el usuario antes de salir del QuizSelected " + getUsername());
-				intent.putExtra("username", getUsername());
-				startActivity(intent);
-				}
-				catch (Exception exception){
-					System.out.println("ERROR INTENTE DE NUEVO");
-				}
-				
-				
-			}
+			new iniciarAsync().execute("");
 		}else if (view == getExitQuizButton()){
 			Intent intentLogin = new Intent(QuizSelected.this, Login.class);
 			startActivity(intentLogin);
 		}
 	}
+    
+    // Clase para ejecutar en Background
+    class iniciarAsync extends AsyncTask<String, Integer, Integer> {
+
+          // Metodo que prepara lo que usara en background, Prepara el progress
+          @Override
+          protected void onPreExecute() {
+                pd = ProgressDialog. show(QuizSelected.this, "VERIFICANDO DATOS", "ESPERE UN MOMENTO");
+                pd.setCancelable( false);
+         }
+
+          // Metodo con las instrucciones que se realizan en background
+          @Override
+          protected Integer doInBackground(String... urlString) {
+                try {
+                	iniciar();
+               } catch (Exception exception) {
+
+               }
+                return null ;
+         }
+
+          // Metodo con las instrucciones al finalizar lo ejectuado en background
+          protected void onPostExecute(Integer resultado) {
+                pd.dismiss();
+                nextActivity();
+         }
+    }
+    
+    private void iniciar(){
+    	String supervisionSelected = getSupervisionSpinner().getSelectedItem().toString();
+		if (supervisionSelected.equalsIgnoreCase("") || supervisionSelected == null){
+//			getMyDialog().AlertDialog(QuizSelected.this, "ALERTA", "DEBE SELECCIONAR UNA SUPERVISION");
+		}else{
+		
+			try{
+				
+			int tamanoSupervision = getResult().getSupervision().length;
+			for (int i = 0; i < tamanoSupervision; i++){
+				if (getResult().getSupervision()[i].getDescription().equalsIgnoreCase(supervisionSelected)){
+						setIdSupervisionSelected(getResult().getSupervision()[i].getIdSupervision());
+						setSupervisionSelected(getResult().getSupervision()[i].getDescription());
+				}
+			}
+			Result resulta = new Result();
+			resulta = getRequestWS().areaData(getIdSupervisionSelected());
+			getResult().setArea(resulta.getArea());
+			}
+			catch (Exception exception){
+				System.out.println("ERROR INTENTE DE NUEVO");
+			}
+		}
+    }
+    
+    private void nextActivity(){
+    	Intent intent = new Intent(QuizSelected.this, ListaArea.class);
+		intent.putExtra("result", result);
+		intent.putExtra("idSupervisionSelected", getIdSupervisionSelected());
+		intent.putExtra("SupervisionSelected", getSupervisionSelected());
+		System.out.println("Este es el usuario antes de salir del QuizSelected " + getUsername());
+		intent.putExtra("username", getUsername());
+		startActivity(intent);
+    }
     private void adapterSpinnerBusiness() {
 		//Llenar Spinner de Empresa
     	try{

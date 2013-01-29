@@ -281,29 +281,27 @@ public SubArea indicatorList(String idSubArea) {
 	public Result areaData(String supervisionSelected)
 	{
 		setResult(new Result());
-		
-		
 		String finalURL = WS_AREA + "supervision=" + supervisionSelected;
 		
 		jsonObject = ConnectWS.enviaSupervision(finalURL);
 		
 		try{
-			if (jsonObject.has(JSON_AREA)){
-		   JSONArray jsonArrayArea = jsonObject.getJSONArray(JSON_AREA);
-		   int tamano = jsonArrayArea.length();
-		   
-		   Area area[] = new Area[tamano];
-		   for(int i=0; i<jsonArrayArea.length(); i++)
-		   {
-			   Area areaTemp = new Area();
-			   JSONObject jsonObjectArea = jsonArrayArea.getJSONObject(i);
-			   areaTemp.setIdArea(jsonObjectArea.getString("supervisionArea"));
-			   areaTemp.setDescription(jsonObjectArea.getString("nombre"));
-			   areaTemp.setEstado(jsonObjectArea.getString("estado"));
-			   area[i] = areaTemp;
-		   }
-		   getResult().setArea(area);
-		   System.out.println("AREA GUARDADA");
+			if (jsonObject.has(JSON_AREA)) {
+				JSONArray jsonArrayArea = jsonObject.getJSONArray(JSON_AREA);
+				int tamano = jsonArrayArea.length();
+
+				Area area[] = new Area[tamano];
+				for (int i = 0; i < jsonArrayArea.length(); i++) {
+					Area areaTemp = new Area();
+					JSONObject jsonObjectArea = jsonArrayArea.getJSONObject(i);
+					areaTemp.setIdArea(jsonObjectArea
+							.getString("supervisionArea"));
+					areaTemp.setDescription(jsonObjectArea.getString("nombre"));
+					areaTemp.setEstado(jsonObjectArea.getString("estado"));
+					area[i] = areaTemp;
+				}
+				getResult().setArea(area);
+				System.out.println("AREA GUARDADA");
 			}
 			   
 			
