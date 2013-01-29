@@ -66,7 +66,7 @@ public class RequestWS {
 		
 		try{
 			if (jsonObject.has(JSON_RESULT)){
-				getResult().setResult(Boolean.parseBoolean(jsonObject.getString(JSON_RESULT)));
+				getResult().setResult(jsonObject.getBoolean(JSON_RESULT));
 				getResult().setMessage(jsonObject.getString(JSON_MESSAGE));
 				
 				if(getResult().isResult())

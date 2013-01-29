@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.researchmobile.smartquiz.data.DataQuiz;
 import com.researchmobile.smartquiz.entity.Answer;
@@ -55,29 +56,20 @@ public class QuizSelected extends Activity implements OnClickListener{
         setContentView(R.layout.quiz_selected);
         
         componentPrepare();
-         fillAdapter();
-        
+        fillAdapter();
     }
     
 	private void fillAdapter() {
-		
-		adapterSpinnerBusiness();
-		networkFilter();
-		//sectorFilter();
-		adapterSpinnerSector();
-		storeFilter();
-		
-	//	System.out.println(getResult().getSupervision()[0].getIdStore());
-		supervisionFilter();
-		
-		
+		try{
+			adapterSpinnerBusiness();
+			networkFilter();
+			adapterSpinnerSector();
+			storeFilter();
+			supervisionFilter();
+		}catch(Exception exception){
+			
+		}
 	}
-
-
-
-	
-
-	
 
 	private void networkFilter() {
 		// TODO Auto-generated method stub
@@ -225,20 +217,28 @@ public class QuizSelected extends Activity implements OnClickListener{
 	}
     private void adapterSpinnerBusiness() {
 		//Llenar Spinner de Empresa
-		setAdapterSpinnerBusiness(new ArrayAdapter<String>(
-				this, 
-				android.R.layout.simple_spinner_dropdown_item, 
-				getConvert().dataBusinessSpinner((getResult().getBussines()))));
-		getBusinessSpinner().setAdapter(getAdapterSpinnerBusiness());
+    	try{
+    		setAdapterSpinnerBusiness(new ArrayAdapter<String>(
+    				this, 
+    				android.R.layout.simple_spinner_dropdown_item, 
+    				getConvert().dataBusinessSpinner((getResult().getBussines()))));
+    		getBusinessSpinner().setAdapter(getAdapterSpinnerBusiness());
+    	}catch(Exception exception){
+    		Toast.makeText(getBaseContext(), "No cuenta con supervisiones", Toast.LENGTH_SHORT).show();
+    	}
 	}
 	
 	private void adapterSpinnerNetwork(String businessSelected){
 		//Llenar Spinner de Cadenas
-		setAdapterSpinnerNetwork(new ArrayAdapter<String>(
-				this, 
-				android.R.layout.simple_spinner_dropdown_item, 
-				getConvert().dataNetworkSpinner(getResult().getBussines(), getResult().getNetwork(), businessSelected)));
-		getNetworkSpinner().setAdapter(getAdapterSpinnerNetwork());
+		try{
+			setAdapterSpinnerNetwork(new ArrayAdapter<String>(
+					this, 
+					android.R.layout.simple_spinner_dropdown_item, 
+					getConvert().dataNetworkSpinner(getResult().getBussines(), getResult().getNetwork(), businessSelected)));
+			getNetworkSpinner().setAdapter(getAdapterSpinnerNetwork());
+		}catch(Exception exception){
+			
+		}
 	}
 	
 	private void adapterSpinnerSector(){
@@ -278,11 +278,6 @@ public class QuizSelected extends Activity implements OnClickListener{
 		setSectorSpinner((Spinner)findViewById(R.id.quiz_selected_sector_spinner));
 		setStoreSpinner((Spinner)findViewById(R.id.quiz_selected_tienda_spinner));
 		setSupervisionSpinner((Spinner)findViewById(R.id.quiz_selected_supervision_spinner));
-		
-		//getStorekSpinner().setEnabled(false);
-		//getAreaSpinner().setEnabled(false);
-		//getSubAreaSpinner().setEnabled(false);
-		//getQuizSpinner().setEnabled(false);
 		
 		setConvert(new Convert());
 		setRequestWS(new RequestWS());

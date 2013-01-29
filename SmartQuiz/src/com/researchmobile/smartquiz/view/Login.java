@@ -3,7 +3,9 @@ package com.researchmobile.smartquiz.view;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,8 +30,7 @@ public class Login  extends Activity implements OnClickListener{
 	
 	private MyDialog myDialog;
 	private ConnectState connectState;
-	//final ProgressDialog pd;
-	//final ProgressDialog pd = new ProgressDialog(this);
+	private ProgressDialog pd = null;
 	
 	/** Called when the activity is first created. */
     @Override
@@ -37,12 +38,6 @@ public class Login  extends Activity implements OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
-   //     final ProgressDialog pd = new ProgressDialog(this);
-      //  pd.setTitle("Conectando...");
-       // pd.setMessage("Favor Espere...");
-       // pd.setCancelable(true);
-        
-       
         componentPrepare();
         
         getUsernameTextView().setOnKeyListener(new OnKeyListener()
@@ -84,6 +79,38 @@ public class Login  extends Activity implements OnClickListener{
         });
     }
     
+ // Clase para ejecutar en Background
+    class loginAsync extends AsyncTask<String, Integer, Integer> {
+
+          // Metodo que prepara lo que usara en background, Prepara el progress
+          @Override
+          protected void onPreExecute() {
+                pd = ProgressDialog. show(Login.this, "VERIFICANDO DATOS", "ESPERE UN MOMENTO");
+                pd.setCancelable( false);
+         }
+
+          // Metodo con las instrucciones que se realizan en background
+          @Override
+          protected Integer doInBackground(String... urlString) {
+                try {
+                	loginVerification();
+               } catch (Exception exception) {
+
+               }
+                return null ;
+         }
+
+          // Metodo con las instrucciones al finalizar lo ejectuado en background
+          protected void onPostExecute(Integer resultado) {
+                pd.dismiss();
+                if (getResult().isResult()){
+                	loginCongratulation();
+                }
+
+         }
+   }
+
+    
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			moveTaskToBack(true);
@@ -109,10 +136,9 @@ public class Login  extends Activity implements OnClickListener{
 	
 	public void onClick(View view) {
 		if (view == getEnterButton()){
+			new loginAsync().execute("");
 			//Require verification data username and password
-			loginVerification();
 		}
-		
 	}
 	private void loginVerification() {
 		setUsername(getUsernameTextView().getText().toString());
@@ -121,7 +147,6 @@ public class Login  extends Activity implements OnClickListener{
 		if (getConnectState().isConnectedToInternet(Login.this)){
 			if (username.equalsIgnoreCase("") || password.equalsIgnoreCase("")){
 				getMyDialog().AlertDialog(this, "ERROR", "DEBE LLENAR LOS CAMPOS REQUERIDOS");
-				//pd.dismiss();
 			}
 				getUsuario().setUsuario(getUsername());
 				getUsuario().setClave(getPassword());
@@ -132,29 +157,26 @@ public class Login  extends Activity implements OnClickListener{
 			}
 		}else{
 			getMyDialog().AlertDialog(Login.this, "LOGIN", "EN ESTE MOMENTO NO CUENTA CON CONEXION A INTERNET");
-			//pd.dismiss();
 		}
-		
-		
 	}
 
 	private void loginWS() {
-		//final ProgressDialog pd = ProgressDialog.show(this, "Conectando...", "Favor espere...", true, false);
-		
 		RequestWS requestWS = new RequestWS();
 		
 		setResult(requestWS.login(getUsername(), getPassword(), this));
-		getMyDialog().simpleToast(this, getResult().getMessage());
+//		getMyDialog().simpleToast(this, getResult().getMessage());
+		Log.e("quiz", "result = " + getResult().isResult());
 		if(getResult().isResult()){
-		final	Boolean error = requestData();
-			//pd.dismiss();
-			if(error){
-				getMyDialog().AlertDialog(Login.this, "ALERTA", "OCURRIO UN ERROR AL CONSULTAR LOS DATOS");
-				}
-			else
-				{
-				loginCongratulation();
-				}
+			Log.e("quiz", "result = " + getResult().isResult());
+			final	Boolean error = requestData();
+				if(error){
+					
+					getMyDialog().AlertDialog(Login.this, "ALERTA", "OCURRIO UN ERROR AL CONSULTAR LOS DATOS");
+					}
+				else
+					{
+	//				loginCongratulation();
+					}
 		}else{
 			cleanComponents();
 		}
@@ -162,6 +184,7 @@ public class Login  extends Activity implements OnClickListener{
 	}
 
 	private Boolean requestData() {
+		Log.e("quiz", "requestData = ");
 		RequestWS requestWS = new RequestWS();
 		Result resultTemp = new Result();
 		resultTemp = requestWS.allData(getResult().getUser());
@@ -180,13 +203,6 @@ public class Login  extends Activity implements OnClickListener{
 			return true;
 			
 		}
-		/*
-		getResult().setStore(resultTemp.getStore());
-		getResult().setArea(resultTemp.getArea());
-		getResult().setSubArea(resultTemp.getSubArea());
-		getResult().setQuiz(resultTemp.getQuiz());
-	    */
-		
 	}
 
 	private void cleanComponents() {
@@ -196,15 +212,12 @@ public class Login  extends Activity implements OnClickListener{
 	}
 
 	private void loginCongratulation() {
-		System.out.println("paso el login");
-		
 		if(getResult()!=null)
 		{
-		Intent intent = new Intent(Login.this, QuizSelected.class);
-		intent.putExtra("result", getResult());
-		System.out.println("Este es el usuario ANTES DE SALIR DEL LOGIN " + getResult().getUser());
-		intent.putExtra("username", getResult().getUser());
-		startActivity(intent);
+			Intent intent = new Intent(Login.this, QuizSelected.class);
+			intent.putExtra("result", getResult());
+			intent.putExtra("username", getResult().getUser());
+			startActivity(intent);
 		}else
 		{
 			getMyDialog().AlertDialog(Login.this, "AVISO", "COMUNIQUESE CON EL ADMINISTRADOR");
@@ -280,6 +293,3 @@ public class Login  extends Activity implements OnClickListener{
 		this.usuario = usuario;
 	}
 }
-
-
-
