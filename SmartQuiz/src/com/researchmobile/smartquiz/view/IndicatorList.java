@@ -5,18 +5,21 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.KeyEvent;
@@ -35,7 +38,6 @@ import android.widget.Toast;
 import com.researchmobile.smartquiz.entity.Answer;
 import com.researchmobile.smartquiz.entity.Indicator;
 import com.researchmobile.smartquiz.entity.Result;
-import com.researchmobile.smartquiz.entity.SubArea;
 import com.researchmobile.smartquiz.utility.ConnectState;
 import com.researchmobile.smartquiz.utility.Convert;
 import com.researchmobile.smartquiz.utility.Data;
@@ -54,6 +56,7 @@ public class IndicatorList extends Activity implements OnClickListener{
 	private RequestWS requestWS;
 	private MyDate myDate;
 	private Result result;
+	private Result resulta;
 	private Usuario usuario;
 	
 	private SimpleAdapter simpleAdapter;
@@ -67,6 +70,7 @@ public class IndicatorList extends Activity implements OnClickListener{
 	private String idSupervisionSelected;
 	private String idAreaSelected;
 	private ConnectState connectState;
+	private ProgressDialog pd = null;
 	
 	private Button sendQuizButton;
 	
@@ -78,8 +82,6 @@ public class IndicatorList extends Activity implements OnClickListener{
         setContentView(R.layout.main);
         
         componentPrepare();
-      //  getAnswer().setStartTime(getMyDate().Hora());
-        
         getSendQuizButton().setOnClickListener(this);
         fillData(getPosition());
         selectItem();        
@@ -88,78 +90,106 @@ public class IndicatorList extends Activity implements OnClickListener{
     @Override
 	public void onClick(View view) {
 		if (view == getSendQuizButton()){
-			final ProgressDialog pd = new ProgressDialog(IndicatorList.this);
-	        pd.setTitle("Enviando...");
-	        pd.setMessage("Favor Espere...");
-	        pd.setCancelable(true);
-	        pd.show();
-			sendDataQuiz();
+			dialogEnviar();
 		}
-		
 	}
+    
+    private void dialogEnviar(){
+    	new AlertDialog.Builder(this)
+        .setTitle("Enviar Quiz")
+        .setMessage("Esta seguro que los datos son correctos")
+        .setPositiveButton("SI", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                	new enviarAsync().execute("");
+                }
+        })
+        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                	Toast.makeText(getBaseContext(), "Envío cancelado", Toast.LENGTH_SHORT).show();
+                }
+        })
+        .show();
+
+    }
+    // Clase para ejecutar en Background
+    class enviarAsync extends AsyncTask<String, Integer, Integer> {
+
+          // Metodo que prepara lo que usara en background, Prepara el progress
+          @Override
+          protected void onPreExecute() {
+                pd = ProgressDialog. show(IndicatorList.this, "VERIFICANDO DATOS", "ESPERE UN MOMENTO");
+                pd.setCancelable( false);
+         }
+
+          // Metodo con las instrucciones que se realizan en background
+          @Override
+          protected Integer doInBackground(String... urlString) {
+                try {
+                	sendDataQuiz();
+               } catch (Exception exception) {
+
+               }
+                return null ;
+         }
+
+          // Metodo con las instrucciones al finalizar lo ejectuado en background
+          protected void onPostExecute(Integer resultado) {
+                pd.dismiss();
+                Log.e("quiz", "envio de quiz, resulta = " + resulta.isResult());
+                if (resulta.isResult()){
+                	nextActivity();
+                }
+         }
+    }
+    
+    private void nextActivity(){
+		Intent intent = new Intent(IndicatorList.this, ListaSubAreas.class);
+		intent.putExtra("result", result);
+		intent.putExtra("idSupervisionSelected", getIdSupervisionSelected());
+		intent.putExtra("idAreaSelected", getIdAreaSelected());
+		System.out.println("Este es el usuario en el LISTADO DE PREGUNTAS ANTES DEL INTENT " + getUsername());
+		intent.putExtra("username", getUsername());
+		startActivity(intent);
+    }
+
     
     private void sendDataQuiz() {
     	
     	if (getConnectState().isConnectedToInternet(IndicatorList.this)){
 			
-    	//	final ProgressDialog pd = ProgressDialog.show(this, "Conectando...", "Favor espere...", false);
-    		
     		getAnswer().setEndTime(getMyDate().Hora());
     		String parametros = getConvert().answerString(getSubIdArea());
     		String respuestas = getConvert().indicatorJsonString(getAnswer());
     		String linkFinal = parametros + "&respuestas=" + respuestas;
     		System.out.println(linkFinal);
     		if (getRequestWS().sendData(linkFinal, getAnswer().getIndicator())){
-    			//allDataRequest();
     			JSONObject status = ConnectWS.enviaEstadoSubArea(getSubIdArea());
     			
     			try{
     			if(Boolean.parseBoolean(status.getString("resultado"))){
     				
-    				
     			}
     			}catch (Exception exception){
     				System.out.println("OCURRIO UN ERROR AL ACTUALIZAR EL ESTADO");
     			}
-    			//pd.dismiss();
-    			getMyDialog().simpleToast(this, "QUIZ ENVIADO");
+//    			getMyDialog().simpleToast(this, "QUIZ ENVIADO");
     			
-    			Result resulta = new Result();
+    			resulta = new Result();
     			resulta = getRequestWS().subAreaData(getIdAreaSelected());
     			getResult().setSubArea(resulta.getSubArea());
     			
-    			
-    			Intent intent = new Intent(IndicatorList.this, ListaSubAreas.class);
-    			intent.putExtra("result", result);
-    			intent.putExtra("idSupervisionSelected", getIdSupervisionSelected());
-    			intent.putExtra("idAreaSelected", getIdAreaSelected());
-    			System.out.println("Este es el usuario en el LISTADO DE PREGUNTAS ANTES DEL INTENT " + getUsername());
-    			intent.putExtra("username", getUsername());
-    			startActivity(intent);
-    			
-    			
-    			//Intent intent = new Intent(IndicatorList.this, ListaSubAreas.class);
-    			//intent.putExtra("result", getResult());
-    			//startActivity(intent);
-    			//Toast.makeText(getBaseContext(), "si funciono", Toast.LENGTH_LONG).show();
     		}else{
     			//Toast.makeText(getBaseContext(), "no funciono", Toast.LENGTH_LONG).show();
     			getMyDialog().simpleToast(this, "NO SE PUEDE ENVIAR");
     		}
-    				
-    				}
-    			else{
-    				getMyDialog().AlertDialog(IndicatorList.this, "ALERTA", "EN ESTE MOMENTO NO CUENTA CON CONEXION A INTERNET");
-    			}
-    			
-    	
-		
-		
-	}
+    	}
+    	else{
+    		getMyDialog().AlertDialog(IndicatorList.this, "ALERTA", "EN ESTE MOMENTO NO CUENTA CON CONEXION A INTERNET");
+    	}
+    }
     
     private void allDataRequest() {
 		loginWS();
-		
 	}
     
     private void loginWS() {
@@ -194,7 +224,6 @@ public class IndicatorList extends Activity implements OnClickListener{
     	setResult((Result)bundle.get("result"));
     	setIdAreaSelected((String)bundle.getString("idAreaSelected"));
     	setUsername((String)bundle.getString("username"));
-    	System.out.println("Este es el usuario en el LISTADO DE PREGUNTAS " + getUsername());
     	setMyDate(new MyDate());
     	setRequestWS(new RequestWS());
     	setResult(new Result());
@@ -207,8 +236,7 @@ public class IndicatorList extends Activity implements OnClickListener{
         
         setActiveImage((ImageView)findViewById(R.id.selectImage));
         setSendQuizButton((Button)findViewById(R.id.list_quiz_send_button));
-        
-	}
+    }
 
 	private void selectItem() {
 		getTestListView().setOnItemClickListener(new OnItemClickListener() {
@@ -225,20 +253,9 @@ public class IndicatorList extends Activity implements OnClickListener{
           	  setPosition(getTestListView().getFirstVisiblePosition());
           	  fillData(getPosition());
             }
-
-			
         });
 	}
-	/*
-	private Bitmap photoView(String path) {
-		String myJpgPath = path;
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 0;
-		Bitmap bm = BitmapFactory.decodeFile(myJpgPath, options);
-		
-		return bm;
-	}
-*/
+
 	private void verImagen(String path) {
 		BitmapFactory.Options options = new BitmapFactory.Options();
       	options.inSampleSize = 0;
@@ -313,13 +330,6 @@ public class IndicatorList extends Activity implements OnClickListener{
     	
 		
 	}
-	
-/*	protected void onActivityResult(int requestCode, int resultCode, Intent data) {  
-        if (requestCode == CAMERA_RESULT) {  
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            getActiveImage().setImageBitmap(photo);
-        }  
-    }*/
 	
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {

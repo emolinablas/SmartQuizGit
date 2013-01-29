@@ -315,16 +315,14 @@ public SubArea indicatorList(String idSubArea) {
 	
 	public Result subAreaData(String codigo) {
 		// TODO Auto-generated method stub
-setResult(new Result());
-		
-		
+		setResult(new Result());
 		String finalURL = WS_SUBAREA + "superArea=" + codigo;
 		
 		jsonObject = ConnectWS.enviaArea(finalURL);
-		
-		try{	
+		try{
+			getResult().setResult(jsonObject.getBoolean("resultado"));
+			getResult().setMessage(jsonObject.getString("mensaje"));
 				if (jsonObject.has(JSON_SUBAREA)) {
-				
 				JSONArray jsonArraySubArea = jsonObject.getJSONArray(JSON_SUBAREA); 
 				int tamano = jsonArraySubArea.length();
 				
