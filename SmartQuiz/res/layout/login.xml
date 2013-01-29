@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="#5F2C91">
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="left|center"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/linearLayout4"
+            android:layout_width="match_parent"
+            android:layout_height="691dp"
+            android:layout_weight="0.48"
+            android:gravity="center" android:background="#f000">
+
+            <LinearLayout
+                android:id="@+id/linearLayout2"
+                android:layout_width="328dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/values_background"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:id="@+id/linearLayout3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="55sp"
+                    android:gravity="center" >
+
+                    <ImageView
+                        android:id="@+id/imageView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5sp"
+                        android:src="@drawable/logo_latorre" />
+
+                    <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SmartQuiz"
+                        android:textColor="#ffffff"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linearLayout8"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical" >
+
+                    <LinearLayout
+                        android:id="@+id/linearLayout5"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10sp"
+                        android:gravity="center" >
+
+                        <TextView
+                            android:id="@+id/textView2"
+                            android:layout_width="100sp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10sp"
+                            android:gravity="left"
+                            android:text="USUARIO"
+                            android:textColor="#ffffff"
+                            android:textStyle="bold" android:layout_marginLeft="10sp"/>
+
+                        <EditText
+                            android:id="@+id/login_username_textview"
+                            android:layout_width="200sp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10sp"
+                            android:gravity="left"
+                            android:hint="USUARIO" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/linearLayout6"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10sp"
+                        android:gravity="center" >
+
+                        <TextView
+                            android:id="@+id/textView2"
+                            android:layout_width="100sp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10sp"
+                            android:gravity="left"
+                            android:text="CONTRASEÑA"
+                            android:textColor="#ffffff"
+                            android:textStyle="bold" android:layout_marginLeft="10sp"/>
+
+                        <EditText
+                            android:id="@+id/login_password_textview"
+                            android:layout_width="200sp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="10sp"
+                            android:gravity="left"
+                            android:hint="CONTRASEÑA"
+                            android:password="true" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linearLayout7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center" >
+
+                    <Button
+                        android:id="@+id/login_enter_button"
+                        android:layout_width="140sp"
+                        android:layout_height="wrap_content"
+                        android:text="INICIAR SESION" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

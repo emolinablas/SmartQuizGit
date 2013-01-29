@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="left|center"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/quiz_pertenece"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="614dp"
+        android:layout_height="wrap_content" android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/idTest"
+            android:layout_width="0sp"
+            android:layout_height="0sp"
+            android:text="TextView" />
+
+        <ImageView
+            android:id="@+id/photo"
+            android:layout_width="70sp"
+            android:layout_height="70sp"
+            android:layout_margin="5sp"
+            android:src="@drawable/off_photo" />
+
+        <ImageView
+            android:id="@+id/state_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5sp"
+            android:src="@drawable/green" />
+
+        <TextView
+            android:id="@+id/test_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/pathPhoto_textView"
+            android:layout_width="0dip"
+            android:layout_height="0dip" />
+
+    </LinearLayout>
+
+</LinearLayout>
