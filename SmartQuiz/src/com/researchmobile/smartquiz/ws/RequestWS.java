@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.researchmobile.smartquiz.entity.Answer;
 import com.researchmobile.smartquiz.entity.Area;
@@ -65,6 +66,9 @@ public class RequestWS {
 		jsonObject = ConnectWS.getJsonObject(finalURL);
 		
 		try{
+			if (jsonObject == null){
+				Log.e("quiz", "RequestWS - json = null");
+			}
 			if (jsonObject.has(JSON_RESULT)){
 				getResult().setResult(jsonObject.getBoolean(JSON_RESULT));
 				getResult().setMessage(jsonObject.getString(JSON_MESSAGE));
@@ -81,7 +85,9 @@ public class RequestWS {
 				
 			}
 			}catch (Exception exception){
-				
+				getResult().setResult(false);
+				getResult().setMessage("Problemas de conexion");
+				return getResult();
 			}
 		return getResult();
 	}

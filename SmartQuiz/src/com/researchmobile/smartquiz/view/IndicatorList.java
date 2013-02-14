@@ -135,7 +135,8 @@ public class IndicatorList extends Activity implements OnClickListener{
           // Metodo con las instrucciones al finalizar lo ejectuado en background
           protected void onPostExecute(Integer resultado) {
                 pd.dismiss();
-                Log.e("quiz", "envio de quiz, resulta = " + resulta.isResult());
+                //Log.e("quiz", "envio de quiz, resulta = " + resulta.isResult());
+                
                 if (resulta.isResult()){
                 	nextActivity();
                 }
@@ -181,6 +182,7 @@ public class IndicatorList extends Activity implements OnClickListener{
     		}else{
     			//Toast.makeText(getBaseContext(), "no funciono", Toast.LENGTH_LONG).show();
     			getMyDialog().simpleToast(this, "NO SE PUEDE ENVIAR");
+    			
     		}
     	}
     	else{

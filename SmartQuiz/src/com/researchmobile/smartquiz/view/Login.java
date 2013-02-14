@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.researchmobile.smartquiz.entity.Result;
@@ -19,9 +20,9 @@ import com.researchmobile.smartquiz.utility.MyDialog;
 import com.researchmobile.smartquiz.utility.Usuario;
 import com.researchmobile.smartquiz.ws.RequestWS;
 
-public class Login  extends Activity implements OnClickListener{
-	private TextView usernameTextView;
-	private TextView passwordTextView;
+public class Login  extends Activity implements OnClickListener, OnKeyListener{
+	private EditText usernameEditText;
+	private EditText passwordEditText;
 	private Button enterButton;
 	private Result result;
 	private String username;
@@ -37,47 +38,37 @@ public class Login  extends Activity implements OnClickListener{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        
+        try{
         componentPrepare();
+        }catch(Exception e){
+        	getMyDialog().AlertDialog(Login.this, "AVISO", "ERROR AL CARGAR LA VISTA");
+        }
         
-        getUsernameTextView().setOnKeyListener(new OnKeyListener()
-        {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP)
-                {
-                    getPasswordTextView().requestFocus();
-                    return true;
-                }
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                	//
-                    return true;
-                }
-                return false;
-            }
-        });
-        
-        getPasswordTextView().setOnKeyListener(new OnKeyListener()
-        {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event)
-            {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP)
-                {
-                	loginVerification();
-                	return true;
-                }
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)
-                {
-                	//
-                    return true;
-                }
-                return false;
-            }
-        });
     }
+    
+    @Override
+	public boolean onKey(View v, int keyCode, KeyEvent event) {
+    	if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP)
+        {
+    		try{
+	    		if (v == getUsernameEditText()){
+	    			getPasswordEditText().requestFocus();
+	    		}
+	    		else if (v == getPasswordEditText()){
+	    			new loginAsync().execute("");
+	    		}
+        	}catch(Exception e){
+        		getMyDialog().AlertDialog(Login.this, "AVISO", "ERROR AL EJECUTAR EL LOGIN");
+        	}
+        	return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)
+        {
+        	//
+            return true;
+        }
+		return false;
+	}
     
  // Clase para ejecutar en Background
     class loginAsync extends AsyncTask<String, Integer, Integer> {
@@ -103,8 +94,14 @@ public class Login  extends Activity implements OnClickListener{
           // Metodo con las instrucciones al finalizar lo ejectuado en background
           protected void onPostExecute(Integer resultado) {
                 pd.dismiss();
+               
                 if (getResult().isResult()){
                 	loginCongratulation();
+                	getMyDialog().AlertDialog(Login.this, "Aviso", getResult().getMessage());
+                }else{
+                	getMyDialog().AlertDialog(Login.this, "Error", getResult().getMessage());
+                	getUsernameEditText().setText("");
+    				getPasswordEditText().setText("");
                 }
 
          }
@@ -124,8 +121,10 @@ public class Login  extends Activity implements OnClickListener{
 
 	private void componentPrepare() {
 		setResult(new Result());
-		setUsernameTextView((TextView)findViewById(R.id.login_username_textview));
-		setPasswordTextView((TextView)findViewById(R.id.login_password_textview));
+		setUsernameEditText((EditText)findViewById(R.id.login_username_edittext));
+		setPasswordEditText((EditText)findViewById(R.id.login_password_edittext));
+		getUsernameEditText().setOnKeyListener(this);
+		getPasswordEditText().setOnKeyListener(this);
 		setEnterButton((Button)findViewById(R.id.login_enter_button));
 		getEnterButton().setOnClickListener(this);
 		setUsuario(new Usuario());
@@ -141,20 +140,24 @@ public class Login  extends Activity implements OnClickListener{
 		}
 	}
 	private void loginVerification() {
-		setUsername(getUsernameTextView().getText().toString());
-		setPassword(getPasswordTextView().getText().toString());
+		setUsername(getUsernameEditText().getText().toString());
+		setPassword(getPasswordEditText().getText().toString());
 					
 		if (getConnectState().isConnectedToInternet(Login.this)){
-			if (username.equalsIgnoreCase("") || password.equalsIgnoreCase("")){
-				getMyDialog().AlertDialog(this, "ERROR", "DEBE LLENAR LOS CAMPOS REQUERIDOS");
-			}
+			if (getUsername().equalsIgnoreCase("") || getPassword().equalsIgnoreCase("")){
+				getResult().setMessage("Debe llenar los campos requeridos");
+//				getMyDialog().AlertDialog(this, "ERROR", "DEBE LLENAR LOS CAMPOS REQUERIDOS");
+			}else{
 				getUsuario().setUsuario(getUsername());
 				getUsuario().setClave(getPassword());
 				try{
-				loginWS();
-			}catch (Exception exception){
-				getMyDialog().simpleToast(this, "ERROR: INTENTE DE NUEVO");
+					loginWS();
+				}catch(Exception e){
+					getMyDialog().AlertDialog(this, "ERROR", "error en en loginWS");
+				}
+				
 			}
+				
 		}else{
 			getMyDialog().AlertDialog(Login.this, "LOGIN", "EN ESTE MOMENTO NO CUENTA CON CONEXION A INTERNET");
 		}
@@ -165,29 +168,33 @@ public class Login  extends Activity implements OnClickListener{
 		
 		setResult(requestWS.login(getUsername(), getPassword(), this));
 //		getMyDialog().simpleToast(this, getResult().getMessage());
-		Log.e("quiz", "result = " + getResult().isResult());
+		//Log.e("quiz", "result = " + getResult().isResult());
 		if(getResult().isResult()){
 			Log.e("quiz", "result = " + getResult().isResult());
 			final	Boolean error = requestData();
 				if(error){
-					
-					getMyDialog().AlertDialog(Login.this, "ALERTA", "OCURRIO UN ERROR AL CONSULTAR LOS DATOS");
+					getResult().setMessage("Ocurrio un error al consultar los datos");
+//					getMyDialog().AlertDialog(Login.this, "ALERTA", "OCURRIO UN ERROR AL CONSULTAR LOS DATOS");
 					}
 				else
 					{
 	//				loginCongratulation();
 					}
 		}else{
+			
 			cleanComponents();
 		}
 		
 	}
 
 	private Boolean requestData() {
-		Log.e("quiz", "requestData = ");
+		
 		RequestWS requestWS = new RequestWS();
+		
 		Result resultTemp = new Result();
+		
 		resultTemp = requestWS.allData(getResult().getUser());
+		
 		//getResult().setBusiness(resultTemp.getBussines());
 		if(resultTemp != null)
 		{
@@ -206,8 +213,9 @@ public class Login  extends Activity implements OnClickListener{
 	}
 
 	private void cleanComponents() {
-		getUsernameTextView().setText("");
-		getPasswordTextView().setText("");
+		getPasswordEditText().setText("");
+		getUsernameEditText().setText("");
+		
 		
 	}
 
@@ -226,18 +234,7 @@ public class Login  extends Activity implements OnClickListener{
 		
 	}
 
-	public TextView getUsernameTextView() {
-		return usernameTextView;
-	}
-	public void setUsernameTextView(TextView usernameTextView) {
-		this.usernameTextView = usernameTextView;
-	}
-	public TextView getPasswordTextView() {
-		return passwordTextView;
-	}
-	public void setPasswordTextView(TextView passwordTextView) {
-		this.passwordTextView = passwordTextView;
-	}
+	
 	public Button getEnterButton() {
 		return enterButton;
 	}
@@ -292,4 +289,22 @@ public class Login  extends Activity implements OnClickListener{
 	public void setUsuario(Usuario usuario) {
 		this.usuario = usuario;
 	}
+
+	public EditText getUsernameEditText() {
+		return usernameEditText;
+	}
+
+	public void setUsernameEditText(EditText usernameEditText) {
+		this.usernameEditText = usernameEditText;
+	}
+
+	public EditText getPasswordEditText() {
+		return passwordEditText;
+	}
+
+	public void setPasswordEditText(EditText passwordEditText) {
+		this.passwordEditText = passwordEditText;
+	}
+
+	
 }
